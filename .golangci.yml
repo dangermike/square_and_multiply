@@ -1,0 +1,35 @@
+run:
+  go: "1.18"
+  concurrency: 4
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - test_client
+    - gen
+    - mock
+  skip-dirs-use-default: true
+  modules-download-mode: vendor
+
+linters:
+  enable:
+    - revive
+    - gofmt
+    - govet
+    - gosec
+    - unconvert
+    - goconst
+    - gocyclo
+    - goimports
+
+linters-settings:
+  govet:
+    enable:
+      - fieldalignment
+
+issues:
+  exclude:
+    - EXC0002 # Annoying issue about not having a comment
+    - EXC0012 # func should have comment or be unexported
+    - "Ids is deprecated" # this is temporary while we change the interface
+
