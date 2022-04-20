@@ -2,33 +2,60 @@ package squareandmultiply_test
 
 import (
 	"fmt"
+	"math/big"
 	"testing"
 
 	squareandmultiply "github.com/dangermike/square_and_multiply"
 )
 
+func bigABmodC(base, exp, mod uint) uint {
+	return uint(big.NewInt(0).Exp(
+		big.NewInt(0).SetUint64(uint64(base)),
+		big.NewInt(0).SetUint64(uint64(exp)),
+		big.NewInt(0).SetUint64(uint64(mod)),
+	).Int64())
+}
+
+func DoTest(t *testing.T, base uint, exp uint, mod uint) {
+	if mod == 0 {
+		t.SkipNow()
+	}
+
+	// using the big.Int.Exp implementation as a reference
+	expected := bigABmodC(base, exp, mod)
+	actual := squareandmultiply.ABmodC(base, exp, mod)
+
+	if expected != actual {
+		t.Fatalf(
+			"\n    expr: (%d ** %d) mod %d"+
+				"\nexpected: %d"+
+				"\n  actual: %d",
+			base, exp, mod, expected, actual,
+		)
+	}
+}
+
 func TestABmodC(t *testing.T) {
 	for _, test := range []struct {
-		base, exp, mod, expected uint
+		base, exp, mod uint
 	}{
-		{0, 123456, 5, 0},
-		{1, 123456, 5, 1},
-		{123456, 0, 543, 1},
-		{123456, 123456, 1, 0},
-		{3, 45, 7, 6},
-		{23, 373, 747, 131},
-		{13, 1 << 63, 65534, 29023},
+		{0, 123456, 5},
+		{1, 123456, 5},
+		{123456, 0, 543},
+		{123456, 123456, 1},
+		{3, 45, 7},
+		{23, 373, 747},
+		{13, 1 << 63, 65534},
 	} {
 		t.Run(fmt.Sprintf("%d**%d mod %d", test.base, test.exp, test.mod), func(t *testing.T) {
-			actual := squareandmultiply.ABmodC(test.base, test.exp, test.mod)
-			if test.expected != actual {
-				t.Fatalf(
-					"\nexpected: %d\n  actual: %d",
-					test.expected, actual,
-				)
-			}
+			DoTest(t, test.base, test.exp, test.mod)
 		})
 	}
+}
+
+func FuzzABmodC(f *testing.F) {
+	f.Add(uint(1), uint(1), uint(1))
+	f.Fuzz(DoTest)
 }
 
 func BenchmarkABmodC(b *testing.B) {

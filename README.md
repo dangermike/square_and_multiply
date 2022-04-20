@@ -4,9 +4,9 @@ Based on the [computerphile video](https://www.youtube.com/watch?v=cbGB__V8MNk) 
 
 There are some little optimizations I threw in, like reversing the exponent so we can ignore bit offsets, but this is pretty vanilla. It is zero allocations, which is nice. An interesting facet of this algorithm is that the speed depends on the inputs. Specifically, the number of `1` bits int he exponent. The performance difference in these fairly small numbers (cryptographically speaking) is ~12:1. We're still sub-microsecond, but it's conceivable that a timing attack would be plausible against really big inputs.
 
-This implementation is not really suitable for cryptogrpahic purposes because the exponents can't be larger than 64 bits. 64 bits is a big integer, but a very small private key! To make this useful in the real-world, the exponent (at least) should be an instance of [math/big.Int](https://pkg.go.dev/math/big#Int). As a practical matter, there are probably better, faster implementations out there. If there isn't already an x86-64 instruction set that includes this, there probably will be soon :)
+This implementation is not suitable for cryptogrpahic purposes because the exponents can't be larger than 64 bits. 64 bits is a big integer, but a very small private key! To make this useful in the real-world, the exponent (at least) should be an instance of [math/big.Int](https://pkg.go.dev/math/big#Int). For more realistic use, [math/big.Int.Exp](https://pkg.go.dev/math/big#Int.Exp) does all this stuff.
 
-This is the performance of this implementation on some test inputs. All test cases were verified against Wolfram Alpha.
+This is the performance of this implementation on some test inputs. All test cases were verified against [math/big.Int.Exp](https://pkg.go.dev/math/big#Int.Exp). [Fuzz tests](https://pkg.go.dev/testing#F.Fuzz) were also run for a billion cycles or so.
 
 ```text
 goos: darwin
@@ -23,4 +23,3 @@ BenchmarkABmodC/2**1_mod_876543-8                               559102686       
 PASS
 ok      github.com/dangermike/square_and_multiply    11.261s
 ```
-
